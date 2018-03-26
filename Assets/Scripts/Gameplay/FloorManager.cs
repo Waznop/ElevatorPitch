@@ -46,8 +46,7 @@ public class FloorManager : MonoBehaviour
 
     public static bool AtFloor(float note)
     {
-        float precision = Constants.Endless ? Constants.EndlessPrecision : Constants.NormalPrecision;
-        return Mathf.Abs(note - Mathf.Round(note)) < precision;
+        return Mathf.Abs(note - Mathf.Round(note)) < Constants.NotePrecision;
     }
 
     public static Color LightUp(Color color)

@@ -14,6 +14,7 @@ public class GameLogic : MonoBehaviour
 
     public AudioClip DoClip;
     public AudioClip PointClip;
+    public AudioClip DingClip;
 
     public Image UpArrow;
     public Image DownArrow;
@@ -242,7 +243,10 @@ public class GameLogic : MonoBehaviour
         }
         else
         {
-            curIdx++;
+            if (toLightOn.Count > 0 || clients.Count == 0)
+            {
+                curIdx++;
+            }
             UpdateTarget();
         }
     }
@@ -277,6 +281,7 @@ public class GameLogic : MonoBehaviour
 
         ArrayList toLightOn = new ArrayList();
         ArrayList toRemove = new ArrayList();
+        bool playedDing = false;
         foreach (PersonScript person in clients)
         {
             if (note == person.Origin && !person.InElevator)
@@ -291,8 +296,18 @@ public class GameLogic : MonoBehaviour
                 person.transform.parent = null;
                 person.GetOffElevator();
                 timer = Constants.Endless ? Constants.EndlessPatience : Constants.NormalPatience;
+
                 IncreaseScore((int)person.Patience);
+                if (!playedDing) {
+                    playedDing = true;
+                    PlayDing(true);
+                }
             }
+        }
+
+        if (!playedDing) {
+            playedDing = true;
+            PlayDing();
         }
 
         foreach (PersonScript person in toRemove)
@@ -304,7 +319,11 @@ public class GameLogic : MonoBehaviour
     void IncreaseScore(int inc)
     {
         score += inc;
-        source.clip = PointClip;
+    }
+
+    void PlayDing(bool point = false)
+    {
+        source.clip = point ? PointClip : DingClip;
         source.pitch = 1;
         source.volume = 0.6f;
         source.Play();

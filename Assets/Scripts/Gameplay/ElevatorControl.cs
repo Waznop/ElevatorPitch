@@ -8,12 +8,14 @@ public class ElevatorControl : MonoBehaviour
     public float SmoothTime = 0.1f;
 
     const string stopTrigger = "Stopping";
-    const string suddenRunTrigger = "SuddenRun";
 
     Animator animator;
     GameLogic gameLogic;
 
     Vector3 velocity = Vector3.zero;
+
+    float stopTimer = 0;
+    int stopFloor = -1;
 
     void Start()
     {
@@ -38,20 +40,30 @@ public class ElevatorControl : MonoBehaviour
         bool was0 = Vector3.SqrMagnitude(prevVelocity - Vector3.zero) < Constants.VecPrecision;
         bool is0 = Vector3.SqrMagnitude(velocity - Vector3.zero) < Constants.VecPrecision;
 
-        if (was0 && !is0)
-        {
-            animator.SetTrigger(suddenRunTrigger);
-        }
-        else if (!was0 && is0)
+        if (!was0 && is0)
         {
             if (FloorManager.AtFloor(note))
             {
                 int floor = Mathf.RoundToInt(note);
-                Vector3 floorPos = new Vector3(0, FloorManager.NoteToPos(floor));
-                transform.position = floorPos;
-
-                animator.SetTrigger(stopTrigger);
-                gameLogic.StoppedAt(floor);
+                stopTimer = Constants.StopDelay;
+                stopFloor = floor;
+            }
+        }
+        else if (was0 && is0)
+        {
+            int curFloor = FloorManager.PosToNote(transform.position.y);
+            if (curFloor == stopFloor && stopTimer > 0)
+            {
+                stopTimer -= Time.deltaTime;
+                if (stopTimer <= 0)
+                {
+                    stopTimer = 0;
+                    PitchManager.PitchValue = PitchManager.NoteToPitch(stopFloor);
+                    Vector3 floorPos = new Vector3(0, FloorManager.NoteToPos(stopFloor));
+                    transform.position = floorPos;
+                    animator.SetTrigger(stopTrigger);
+                    gameLogic.StoppedAt(stopFloor);
+                }
             }
         }
     }

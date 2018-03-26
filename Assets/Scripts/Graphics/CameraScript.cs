@@ -16,7 +16,7 @@ public class CameraScript : MonoBehaviour
     void Awake()
     {
         Camera cam = gameObject.GetComponent<Camera>();
-        int mult = Constants.Endless ? 2 : 8;
+        int mult = Constants.Endless ? 4 : 8;
         cam.orthographicSize = Screen.height / (Constants.PPU * mult);
     }
 

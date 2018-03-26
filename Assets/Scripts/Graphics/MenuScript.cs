@@ -17,6 +17,22 @@ public class MenuScript : MonoBehaviour
         SceneManager.LoadScene("Main");
     }
 
+    void Awake()
+    {
+        if (PlayerPrefs.HasKey(Constants.VersionKey))
+        {
+            float v = PlayerPrefs.GetFloat(Constants.VersionKey);
+            if (v < Constants.Version)
+            {
+                PlayerPrefs.DeleteAll();
+                PlayerPrefs.SetFloat(Constants.VersionKey, Constants.Version);
+            }
+        } else {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.SetFloat(Constants.VersionKey, Constants.Version);
+        }
+    }
+
     void Start()
     {
         if (PlayerPrefs.HasKey(GameLogic.HighscoreKey))

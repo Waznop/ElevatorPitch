@@ -13,10 +13,11 @@ public class Constants
     public const int MinNote = 48; // C3
     public const int MaxNote = 72; // C5
 
+    public const float StopDelay = 0.2f;
+
     public const float VecPrecision = 0.01f;
 
-    public const float NormalPrecision = 0.1f;
-    public const float EndlessPrecision = 0.25f;
+    public const float NotePrecision = 0.5f;
 
     public const float PersonOffset = -0.5f;
 
@@ -25,4 +26,7 @@ public class Constants
 
     public const float EndlessSpawnDecay = 0.95f;
     public const float EndlessInitSpawnTime = 7f;
+
+    public const float Version = 0.01f;
+    public const string VersionKey = "version";
 }

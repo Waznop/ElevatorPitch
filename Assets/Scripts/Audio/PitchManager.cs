@@ -11,9 +11,9 @@ public class PitchManager : MonoBehaviour
 
     public AudioMixer output;
 
-    const int SampleSize = 2048;
+    const int SampleSize = 4096;
     const int HistorySize = 10;
-    const float Threshold = 0.02f;
+    const float Threshold = 0.05f;
 
     int sampleFreq;
     float[] samples;
