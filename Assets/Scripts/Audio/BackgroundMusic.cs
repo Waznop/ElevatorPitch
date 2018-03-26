@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BackgroundMusic : MonoBehaviour {
+public class BackgroundMusic : MonoBehaviour
+{
 
     static bool created = false;
 
-	void Awake()
-	{
+    void Awake()
+    {
         if (!created)
         {
             DontDestroyOnLoad(gameObject);
@@ -16,6 +17,6 @@ public class BackgroundMusic : MonoBehaviour {
             AudioSource source = GetComponent<AudioSource>();
             source.Play();
         }
-	}
+    }
 
 }

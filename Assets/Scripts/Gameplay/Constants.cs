@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-public class Constants {
+public class Constants
+{
 
     public static bool GameOn = false;
     public static bool Endless = true;

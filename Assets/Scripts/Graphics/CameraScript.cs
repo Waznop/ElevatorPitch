@@ -13,14 +13,14 @@ public class CameraScript : MonoBehaviour
     float minHeight;
     float maxHeight;
 
-	void Awake()
-	{
+    void Awake()
+    {
         Camera cam = gameObject.GetComponent<Camera>();
         int mult = Constants.Endless ? 2 : 8;
         cam.orthographicSize = Screen.height / (Constants.PPU * mult);
-	}
+    }
 
-	void Start()
+    void Start()
     {
         Camera cam = gameObject.GetComponent<Camera>();
 

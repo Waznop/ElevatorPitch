@@ -49,7 +49,7 @@ namespace Pitch
         private IIRFilter m_iirFilterHiHi;
 
         public delegate void PitchDetectedHandler(PitchTracker sender, PitchRecord pitchRecord);
-        public event PitchDetectedHandler PitchDetected; 
+        public event PitchDetectedHandler PitchDetected;
 
         /// <summary>
         /// Constructor
@@ -107,7 +107,7 @@ namespace Pitch
             set
             {
                 m_pitchRecordsPerSecond = Math.Max(1, Math.Min(100, value));
-                Setup(); 
+                Setup();
             }
         }
 
@@ -121,7 +121,7 @@ namespace Pitch
             {
                 if (m_recordPitchRecords == value)
                     return;
-                
+
                 m_recordPitchRecords = value;
 
                 if (!m_recordPitchRecords)
@@ -137,8 +137,8 @@ namespace Pitch
         public int PitchRecordHistorySize
         {
             get { return m_pitchRecordHistorySize; }
-            set 
-            { 
+            set
+            {
                 m_pitchRecordHistorySize = value;
 
                 m_pitchRecords.Capacity = m_pitchRecordHistorySize;
@@ -346,7 +346,7 @@ namespace Pitch
             m_pitchBufSize = (int)(((1.0f / (float)kMinFreq) * 2.0f + ((kAvgCount - 1) * kAvgOffset)) * m_sampleRate) + 16;
             m_pitchBufLo = new float[m_pitchBufSize + m_detectOverlapSamples];
             m_pitchBufHi = new float[m_pitchBufSize + m_detectOverlapSamples];
-            m_samplesPerPitchBlock = (int)Math.Round(m_sampleRate / m_pitchRecordsPerSecond); 
+            m_samplesPerPitchBlock = (int)Math.Round(m_sampleRate / m_pitchRecordsPerSecond);
 
             m_circularBufferLo = new CircularBuffer<float>((int)(kCircularBufSaveTime * m_sampleRate + 0.5f) + 10000);
             m_circularBufferHi = new CircularBuffer<float>((int)(kCircularBufSaveTime * m_sampleRate + 0.5f) + 10000);
@@ -379,7 +379,7 @@ namespace Pitch
 
                 m_pitchRecords.Add(record);
             }
-            
+
             if (this.PitchDetected != null)
                 this.PitchDetected(this, record);
         }

@@ -15,7 +15,7 @@ public class ElevatorControl : MonoBehaviour
 
     Vector3 velocity = Vector3.zero;
 
-	void Start()
+    void Start()
     {
         animator = GetComponent<Animator>();
         gameLogic = GetComponent<GameLogic>();
@@ -38,10 +38,14 @@ public class ElevatorControl : MonoBehaviour
         bool was0 = Vector3.SqrMagnitude(prevVelocity - Vector3.zero) < Constants.VecPrecision;
         bool is0 = Vector3.SqrMagnitude(velocity - Vector3.zero) < Constants.VecPrecision;
 
-        if (was0 && !is0) {
+        if (was0 && !is0)
+        {
             animator.SetTrigger(suddenRunTrigger);
-        } else if (!was0 && is0) {
-            if (FloorManager.AtFloor(note)) {
+        }
+        else if (!was0 && is0)
+        {
+            if (FloorManager.AtFloor(note))
+            {
                 int floor = Mathf.RoundToInt(note);
                 Vector3 floorPos = new Vector3(0, FloorManager.NoteToPos(floor));
                 transform.position = floorPos;

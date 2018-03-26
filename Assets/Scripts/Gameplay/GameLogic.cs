@@ -40,7 +40,7 @@ public class GameLogic : MonoBehaviour
     float timer;
     int score;
 
-	void Start()
+    void Start()
     {
         factory = GetComponent<PersonFactory>();
         floorManager = GetComponent<FloorManager>();
@@ -52,10 +52,13 @@ public class GameLogic : MonoBehaviour
         timer = 0;
         clients = new ArrayList();
 
-        if (Constants.Endless) {
+        if (Constants.Endless)
+        {
             spawnTime = Constants.EndlessInitSpawnTime;
             timer = Constants.EndlessPatience;
-        } else {
+        }
+        else
+        {
             curIdx = 0;
             levelLen = Constants.Level.Length;
             timer = Constants.NormalPatience;
@@ -78,10 +81,12 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    void Spawn() {
-        
-        if (Constants.Endless) {
-            
+    void Spawn()
+    {
+
+        if (Constants.Endless)
+        {
+
             spawnTimer = spawnTime;
             spawnTime *= Constants.EndlessSpawnDecay;
 
@@ -97,7 +102,9 @@ public class GameLogic : MonoBehaviour
             person.Appear(from, to);
             clients.Add(person);
 
-        } else {
+        }
+        else
+        {
 
             int from = Constants.Level[curIdx];
             int to = Constants.Level[curIdx + 1];
@@ -114,14 +121,16 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-	void Update()
-	{
+    void Update()
+    {
         ScoreText.text = score.ToString();
 
-        if (Constants.GameOn) {
+        if (Constants.GameOn)
+        {
 
-            if (Constants.Endless) {
-                
+            if (Constants.Endless)
+            {
+
                 if (spawnTimer > 0)
                 {
                     spawnTimer -= Time.deltaTime;
@@ -161,7 +170,9 @@ public class GameLogic : MonoBehaviour
                 }
 
                 TimerBar.value = timer / Constants.EndlessPatience;
-            } else {
+            }
+            else
+            {
 
                 int targetNote = Constants.Level[curIdx];
                 int curNote = FloorManager.PosToNote(transform.position.y);
@@ -206,16 +217,18 @@ public class GameLogic : MonoBehaviour
                 EndGame();
             }
         }
-	}
+    }
 
     IEnumerator ResumeGame(ArrayList toLightOn, int toLightOff)
     {
         yield return new WaitForSeconds(1);
 
         floorManager.LightOff(toLightOff);
-        foreach (int note in toLightOn) {
+        foreach (int note in toLightOn)
+        {
             floorManager.LightOn(note);
-            if (!Constants.Endless) {
+            if (!Constants.Endless)
+            {
                 PlayNote(note);
                 string noteName = PitchManager.NoteToName(note);
                 UpText.text = noteName;
@@ -223,9 +236,12 @@ public class GameLogic : MonoBehaviour
             }
         }
 
-        if (Constants.Endless) {
+        if (Constants.Endless)
+        {
             Constants.GameOn = true;
-        } else {
+        }
+        else
+        {
             curIdx++;
             UpdateTarget();
         }
@@ -261,12 +277,16 @@ public class GameLogic : MonoBehaviour
 
         ArrayList toLightOn = new ArrayList();
         ArrayList toRemove = new ArrayList();
-        foreach (PersonScript person in clients) {
-            if (note == person.Origin && !person.InElevator) {
+        foreach (PersonScript person in clients)
+        {
+            if (note == person.Origin && !person.InElevator)
+            {
                 person.transform.parent = transform;
                 person.GetOnElevator();
                 toLightOn.Add(person.Destination);
-            } else if (note == person.Destination && person.InElevator) {
+            }
+            else if (note == person.Destination && person.InElevator)
+            {
                 toRemove.Add(person);
                 person.transform.parent = null;
                 person.GetOffElevator();
@@ -290,7 +310,7 @@ public class GameLogic : MonoBehaviour
         source.Play();
     }
 
-	void PlayNote(int note)
+    void PlayNote(int note)
     {
         float targetFreq = PitchManager.NoteToPitch(note);
         source.clip = DoClip;

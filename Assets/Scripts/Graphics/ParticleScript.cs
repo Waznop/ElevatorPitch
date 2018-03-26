@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ParticleScript : MonoBehaviour {
+public class ParticleScript : MonoBehaviour
+{
 
     ParticleSystem ps;
 
-	void Start () {
+    void Start()
+    {
         ps = GetComponent<ParticleSystem>();
-	}
-	
-	void Update () {
+    }
+
+    void Update()
+    {
         if (!ps.IsAlive())
         {
             Destroy(gameObject);
         }
-	}
+    }
 }

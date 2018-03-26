@@ -33,7 +33,8 @@ public class PersonScript : MonoBehaviour
     bool validTarget;
     bool killAtTarget;
 
-    public void Appear(int from, int to) {
+    public void Appear(int from, int to)
+    {
         Origin = from;
         Destination = to;
         Patience = Constants.Endless ? Constants.EndlessPatience : Constants.NormalPatience;
@@ -45,14 +46,16 @@ public class PersonScript : MonoBehaviour
         MakePoof();
     }
 
-    public void GetOnElevator() {
+    public void GetOnElevator()
+    {
         InElevator = true;
         float xpos = Random.Range(-1f, 1f);
         float ypos = FloorManager.NoteToPos(Origin) + Constants.PersonOffset;
         MoveTowards(new Vector3(xpos, ypos));
     }
 
-    public void GetOffElevator() {
+    public void GetOffElevator()
+    {
         InElevator = false;
         float xpos = Random.Range(3f, 5f);
         float ypos = FloorManager.NoteToPos(Destination) + Constants.PersonOffset;
@@ -71,9 +74,10 @@ public class PersonScript : MonoBehaviour
         Instantiate(Poof, transform.position, Quaternion.identity);
     }
 
-	void Update()
-	{
-        if (validTarget) {
+    void Update()
+    {
+        if (validTarget)
+        {
             Vector3 newPos = Vector3.SmoothDamp(transform.position, target, ref velocity, SmoothTime);
 
             if (transform.parent != null)
@@ -81,16 +85,19 @@ public class PersonScript : MonoBehaviour
 
             transform.position = newPos;
 
-            if (Vector3.SqrMagnitude(transform.position - target) < precision) {
+            if (Vector3.SqrMagnitude(transform.position - target) < precision)
+            {
                 validTarget = false;
-                if (killAtTarget) {
+                if (killAtTarget)
+                {
                     MakePoof();
                     Destroy(gameObject);
                 }
             }
         }
 
-        if (Constants.GameOn) {
+        if (Constants.GameOn)
+        {
             if (Patience > 0)
             {
                 Patience -= Time.deltaTime;
@@ -100,9 +107,9 @@ public class PersonScript : MonoBehaviour
                 }
             }
         }
-	}
+    }
 
-	void Start()
+    void Start()
     {
         if (Skin)
         {

@@ -107,7 +107,8 @@ public class FloorManager : MonoBehaviour
         }
     }
 
-    public void LightOn(int note) {
+    public void LightOn(int note)
+    {
         int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
         var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
@@ -115,7 +116,8 @@ public class FloorManager : MonoBehaviour
         floorsOn.Add(note);
     }
 
-    public void LightOff(int note) {
+    public void LightOff(int note)
+    {
         int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
         var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
@@ -123,17 +125,21 @@ public class FloorManager : MonoBehaviour
         floorsOn.Remove(note);
     }
 
-    public int FloorsOnAbove(int note) {
+    public int FloorsOnAbove(int note)
+    {
         int count = 0;
-        foreach (int floor in floorsOn) {
+        foreach (int floor in floorsOn)
+        {
             if (floor > note) count++;
         }
         return count;
     }
 
-    public int FloorsOnUnder(int note) {
+    public int FloorsOnUnder(int note)
+    {
         int count = 0;
-        foreach (int floor in floorsOn) {
+        foreach (int floor in floorsOn)
+        {
             if (floor < note) count++;
         }
         return count;

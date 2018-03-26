@@ -47,7 +47,7 @@ public class PitchManager : MonoBehaviour
         source.Play();
     }
 
-	void Update()
+    void Update()
     {
         source.GetOutputData(samples, 0);
         pitchTracker.ProcessBuffer(samples);
