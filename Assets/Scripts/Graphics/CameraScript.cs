@@ -7,8 +7,6 @@ public class CameraScript : MonoBehaviour
 
     public float SmoothTime = 0.3f;
 
-    public const int PPU = 16;
-
     Vector3 velocity = Vector3.zero;
     Transform target;
 
@@ -17,21 +15,19 @@ public class CameraScript : MonoBehaviour
 
 	void Awake()
 	{
-        int mult = GameLogic.Level == null ? 4 : 8;
-
         Camera cam = gameObject.GetComponent<Camera>();
-        cam.orthographicSize = Screen.height / (PPU * mult);
+        int mult = Constants.Endless ? 2 : 8;
+        cam.orthographicSize = Screen.height / (Constants.PPU * mult);
 	}
 
 	void Start()
     {
         Camera cam = gameObject.GetComponent<Camera>();
 
-        minHeight = GameLogic.MinNote * PPU / 4 + cam.orthographicSize - 2;
-        maxHeight = GameLogic.MaxNote * PPU / 4 - cam.orthographicSize + 2;
+        minHeight = FloorManager.NoteToPos(Constants.MinNote) + cam.orthographicSize - 2;
+        maxHeight = FloorManager.NoteToPos(Constants.MaxNote) - cam.orthographicSize + 2;
 
         target = FindObjectOfType<ElevatorControl>().transform;
-        // transform.position = new Vector3(0, GameLogic.MinNote * PPU / 4);
         transform.position = new Vector3(0, minHeight);
     }
 

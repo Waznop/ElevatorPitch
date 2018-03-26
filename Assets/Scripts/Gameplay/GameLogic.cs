@@ -7,29 +7,13 @@ using UnityEngine.SceneManagement;
 public class GameLogic : MonoBehaviour
 {
 
+    PersonFactory factory;
+    FloorManager floorManager;
     AudioSource source;
+    float refFreq;
 
     public AudioClip DoClip;
     public AudioClip PointClip;
-
-    float refFreq;
-
-    public static int MinNote = 48; // C3
-    public static int MaxNote = 72; // C5
-
-    const float maxTimer = 5;
-    float timer = 0;
-
-    const float spawnDecay = 0.95f;
-    float spawnTime = 5;
-    float spawnTimer = 0;
-    public static float MaxPatience = 30;
-    public static float MinPatience = 0;
-
-    static float pauseTime = 1;
-    static float pauseTimer = 0;
-
-    public static bool GameStarted = false;
 
     public Image UpArrow;
     public Image DownArrow;
@@ -38,215 +22,55 @@ public class GameLogic : MonoBehaviour
     public Slider TimerBar;
     public Text ScoreText;
 
-    public ElevatorControl Elevator;
-
-    PersonFactory factory;
-    GameObject client;
-
     public const string MinNoteKey = "minNote";
     public const string MaxNoteKey = "maxNote";
     public const string LastscoreKey = "lastscore";
     public const string HighscoreKey = "highscore";
 
-    const float penalty = 1;
+    // normal
+    int curIdx;
+    int levelLen;
 
-    static int totalScore = 0;
+    // endless
+    float spawnTime;
+    float spawnTimer;
 
-    int curIdx = -1;
-    int targetIdx = 0;
-
-    public static int[] Level;
-    int levelLength;
-
-    bool endless;
-
-    public delegate void FloorStopHandler(int floor);
-    public static event FloorStopHandler FloorStop; 
-
-	void Awake()
-	{
-        if (PlayerPrefs.HasKey(MinNoteKey))
-        {
-            MinNote = PlayerPrefs.GetInt(MinNoteKey);
-        }
-
-        if (PlayerPrefs.HasKey(MaxNoteKey))
-        {
-            MaxNote = PlayerPrefs.GetInt(MaxNoteKey);
-        }
-	}
+    // both
+    ArrayList clients;
+    float timer;
+    int score;
 
 	void Start()
     {
-        source = GetComponent<AudioSource>();
-        refFreq = PitchManager.MidiToFreq(60); // C4
         factory = GetComponent<PersonFactory>();
+        floorManager = GetComponent<FloorManager>();
+        source = GetComponent<AudioSource>();
+        refFreq = PitchManager.NoteToFreq(60); // C4
 
-        if (Level != null) {
-            levelLength = Level.Length;
+        Constants.GameOn = false;
+        score = 0;
+        timer = 0;
+        clients = new ArrayList();
+
+        if (Constants.Endless) {
+            spawnTime = Constants.EndlessInitSpawnTime;
+            timer = Constants.EndlessPatience;
         } else {
-            endless = true;
+            curIdx = 0;
+            levelLen = Constants.Level.Length;
+            timer = Constants.NormalPatience;
         }
-
-        TimerBar.gameObject.SetActive(false);
 
         Invoke("StartGame", 1);
     }
 
-    void SpawnEndless() {
-        spawnTime *= spawnDecay;
-        spawnTimer = spawnTime;
-
-        if (!TimerBar.IsActive()) {
-            TimerBar.gameObject.SetActive(true);
-        }
-
-        int from = Random.Range(MinNote, MaxNote + 1);
-        int to = Random.Range(MinNote, MaxNote + 1);
-        while (to == from) {
-            to = Random.Range(MinNote, MaxNote + 1);
-        }
-
-        FloorManager.LightOn(from);
-        GameObject person = factory.CreatePerson();
-
-        float targetClientY = from * CameraScript.PPU / 4 - 0.5f;
-        float xpos = Random.Range(-5f, -3f);
-        person.transform.position = new Vector3(xpos, targetClientY);
-        var ps = person.GetComponent<PersonScript>();
-        ps.MakePoof();
-        ps.Origin = from;
-        ps.Destination = to;
-        ps.Patience = MaxPatience;
-        FloorStop += ps.FloorStopped;
-    }
-
-    public static void ClientInteraction(bool gettingOn, PersonScript person) {
-        GameStarted = false;
-        pauseTimer = pauseTime;
-
-        if (gettingOn) {
-            FloorManager.LightOff(person.Origin);
-            FloorManager.LightOn(person.Destination);
-        } else {
-            totalScore += (int)(person.Patience * 10);
-            MinPatience = MaxPatience;
-            FloorManager.LightOff(person.Destination);
-        }
-    }
-
-	void Update()
-	{
-        ScoreText.text = totalScore.ToString();
-
-        if (GameStarted) {
-
-            if (endless) {
-                if (spawnTimer > 0)
-                {
-                    spawnTimer -= Time.deltaTime;
-                    if (spawnTimer <= 0)
-                    {
-                        spawnTimer = 0;
-                        SpawnEndless();
-                    }
-                }
-
-                TimerBar.value = MinPatience / MaxPatience;
-
-                int curFloor = Mathf.RoundToInt(Elevator.transform.position.y * 4f / CameraScript.PPU);
-                int floorsAbove = FloorManager.FloorsOnAbove(curFloor);
-                int floorsUnder = FloorManager.FloorsOnUnder(curFloor);
-
-                if (floorsAbove > 0) {
-                    UpArrow.enabled = true;
-                    UpText.enabled = true;
-                    UpText.text = floorsAbove.ToString();
-                } else {
-                    UpArrow.enabled = false;
-                    UpText.enabled = false;
-                }
-
-                if (floorsUnder > 0) {
-                    DownArrow.enabled = true;
-                    DownText.enabled = true;
-                    DownText.text = floorsUnder.ToString();
-                } else {
-                    DownArrow.enabled = false;
-                    DownText.enabled = false;
-                }
-            } else {
-                if (timer > 0)
-                {
-                    timer -= Time.deltaTime;
-                    TimerBar.value = timer / maxTimer;
-                    if (timer <= 0)
-                    {
-                        timer = 0;
-                        EndGame();
-                    }
-                }
-
-                int targetNote = Level[targetIdx];
-                float target = targetNote * CameraScript.PPU / 4f;
-                float current = Elevator.transform.position.y;
-
-                if (target > current)
-                {
-                    UpArrow.color = FloorManager.GetColor(targetNote);
-                    UpArrow.color = FloorManager.LightUp(UpArrow.color);
-                    UpArrow.enabled = true;
-                    DownArrow.enabled = false;
-                }
-                else if (target < current)
-                {
-                    DownArrow.color = FloorManager.GetColor(targetNote);
-                    DownArrow.color = FloorManager.LightUp(DownArrow.color);
-                    UpArrow.enabled = false;
-                    DownArrow.enabled = true;
-                }
-                else
-                {
-                    UpArrow.enabled = false;
-                    DownArrow.enabled = false;
-                }
-            }
-        } else if (endless) {
-            if (pauseTimer > 0) {
-                pauseTimer -= Time.deltaTime;
-                if (pauseTimer <= 0) {
-                    pauseTimer = 0;
-                    GameStarted = true;
-                }
-            }
-        }
-	}
-
-    void GetPoint()
-    {
-        totalScore += (int)(timer * 10);
-        source.clip = PointClip;
-        source.pitch = 1;
-        source.volume = 0.6f;
-        source.Play();
-    }
-
-	void PlayNote(int midi)
-    {
-        float targetFreq = PitchManager.MidiToFreq(midi);
-        source.clip = DoClip;
-        source.pitch = targetFreq / refFreq;
-        source.volume = 1;
-        source.Play();
-    }
-
     void StartGame()
     {
-        if (endless)
+        if (Constants.Endless)
         {
-            MinPatience = MaxPatience;
-            spawnTimer = spawnTime;
-            GameStarted = true;
+            TimerBar.gameObject.SetActive(true);
+            Spawn();
+            Constants.GameOn = true;
         }
         else
         {
@@ -254,59 +78,176 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    void ReachTarget(int target)
+    void Spawn() {
+        
+        if (Constants.Endless) {
+            
+            spawnTimer = spawnTime;
+            spawnTime *= Constants.EndlessSpawnDecay;
+
+            int from = Random.Range(Constants.MinNote, Constants.MaxNote + 1);
+            int to = Random.Range(Constants.MinNote, Constants.MaxNote + 1);
+            while (to == from)
+            {
+                to = Random.Range(Constants.MinNote, Constants.MaxNote + 1);
+            }
+
+            floorManager.LightOn(from);
+            PersonScript person = factory.CreatePerson();
+            person.Appear(from, to);
+            clients.Add(person);
+
+        } else {
+
+            int from = Constants.Level[curIdx];
+            int to = Constants.Level[curIdx + 1];
+
+            string noteName = PitchManager.NoteToName(from);
+            UpText.text = noteName;
+            DownText.text = noteName;
+            floorManager.LightOn(from);
+            PlayNote(from);
+            PersonScript person = factory.CreatePerson();
+            person.Appear(from, to);
+            clients.Add(person);
+
+        }
+    }
+
+	void Update()
+	{
+        ScoreText.text = score.ToString();
+
+        if (Constants.GameOn) {
+
+            if (Constants.Endless) {
+                
+                if (spawnTimer > 0)
+                {
+                    spawnTimer -= Time.deltaTime;
+                    if (spawnTimer <= 0)
+                    {
+                        spawnTimer = 0;
+                        Spawn();
+                    }
+                }
+
+                int note = FloorManager.PosToNote(transform.position.y);
+                int floorsAbove = floorManager.FloorsOnAbove(note);
+                int floorsUnder = floorManager.FloorsOnUnder(note);
+
+                if (floorsAbove > 0)
+                {
+                    UpArrow.enabled = true;
+                    UpText.enabled = true;
+                    UpText.text = floorsAbove.ToString();
+                }
+                else
+                {
+                    UpArrow.enabled = false;
+                    UpText.enabled = false;
+                }
+
+                if (floorsUnder > 0)
+                {
+                    DownArrow.enabled = true;
+                    DownText.enabled = true;
+                    DownText.text = floorsUnder.ToString();
+                }
+                else
+                {
+                    DownArrow.enabled = false;
+                    DownText.enabled = false;
+                }
+
+                TimerBar.value = timer / Constants.EndlessPatience;
+            } else {
+
+                int targetNote = Constants.Level[curIdx];
+                int curNote = FloorManager.PosToNote(transform.position.y);
+
+                if (targetNote > curNote)
+                {
+                    UpArrow.color = floorManager.GetColor(targetNote);
+                    UpArrow.color = FloorManager.LightUp(UpArrow.color);
+                    UpArrow.enabled = true;
+                    UpText.enabled = true;
+                    DownArrow.enabled = false;
+                    DownText.enabled = false;
+                }
+                else if (targetNote < curNote)
+                {
+                    DownArrow.color = floorManager.GetColor(targetNote);
+                    DownArrow.color = FloorManager.LightUp(DownArrow.color);
+                    UpArrow.enabled = false;
+                    UpText.enabled = false;
+                    DownArrow.enabled = true;
+                    DownText.enabled = true;
+                }
+                else
+                {
+                    UpArrow.enabled = false;
+                    UpText.enabled = false;
+                    DownArrow.enabled = false;
+                    DownText.enabled = false;
+                }
+
+                TimerBar.value = timer / Constants.NormalPatience;
+            }
+
+            foreach (PersonScript person in clients)
+            {
+                timer = Mathf.Min(timer, person.Patience);
+            }
+
+            if (timer <= 0)
+            {
+                timer = 0;
+                EndGame();
+            }
+        }
+	}
+
+    IEnumerator ResumeGame(ArrayList toLightOn, int toLightOff)
     {
-        GameStarted = false;
-        UpArrow.enabled = false;
-        DownArrow.enabled = false;
+        yield return new WaitForSeconds(1);
 
-        GetPoint();
-
-        PersonScript ps = client.GetComponent<PersonScript>();
-        float targetClientY = target * CameraScript.PPU / 4 - 0.5f;
-
-        if (targetIdx % 2 == 0) { // getting on
-            ps.transform.parent = Elevator.transform;
-            ps.MoveTowards(new Vector3(0, targetClientY));
-        } else { // getting off
-            ps.MoveTowards(new Vector3(4, targetClientY), true);
+        floorManager.LightOff(toLightOff);
+        foreach (int note in toLightOn) {
+            floorManager.LightOn(note);
+            if (!Constants.Endless) {
+                PlayNote(note);
+                string noteName = PitchManager.NoteToName(note);
+                UpText.text = noteName;
+                DownText.text = noteName;
+            }
         }
 
-        StartCoroutine(AdvanceTarget(target));
+        if (Constants.Endless) {
+            Constants.GameOn = true;
+        } else {
+            curIdx++;
+            UpdateTarget();
+        }
+    }
+
+    void NormalResumeGame()
+    {
+        source.Stop();
+        TimerBar.gameObject.SetActive(true);
+        Constants.GameOn = true;
     }
 
     void UpdateTarget()
     {
-        if (curIdx < targetIdx)
+        if (curIdx < levelLen)
         {
-            int target = Level[targetIdx];
-            PlayNote(target);
-            curIdx = targetIdx;
-            FloorManager.LightOn(target);
-            TimerBar.gameObject.SetActive(false);
-
-            if (client == null) {
-                client = factory.CreatePerson();
-                float targetClientY = target * CameraScript.PPU / 4 - 0.5f;
-                client.transform.position = new Vector3(-4, targetClientY);
-                var ps = client.GetComponent<PersonScript>();
-                ps.MakePoof();
+            if (clients.Count == 0)
+            {
+                Spawn();
             }
-        }
-
-        Invoke("ResumeGame", 1);
-    }
-
-    IEnumerator AdvanceTarget(int target)
-    {
-        yield return new WaitForSeconds(1);
-
-        FloorManager.LightOff(target);
-        targetIdx++;
-
-        if (targetIdx < levelLength)
-        {
-            UpdateTarget();
+            TimerBar.gameObject.SetActive(false);
+            Invoke("NormalResumeGame", 1);
         }
         else
         {
@@ -314,59 +255,68 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    public static void EndGame()
+    public void StoppedAt(int note)
     {
-        PlayerPrefs.SetInt(LastscoreKey, totalScore);
+        Constants.GameOn = false;
+
+        ArrayList toLightOn = new ArrayList();
+        ArrayList toRemove = new ArrayList();
+        foreach (PersonScript person in clients) {
+            if (note == person.Origin && !person.InElevator) {
+                person.transform.parent = transform;
+                person.GetOnElevator();
+                toLightOn.Add(person.Destination);
+            } else if (note == person.Destination && person.InElevator) {
+                toRemove.Add(person);
+                person.transform.parent = null;
+                person.GetOffElevator();
+                timer = Constants.Endless ? Constants.EndlessPatience : Constants.NormalPatience;
+                IncreaseScore((int)person.Patience);
+            }
+        }
+
+        foreach (PersonScript person in toRemove)
+            clients.Remove(person);
+
+        StartCoroutine(ResumeGame(toLightOn, note));
+    }
+
+    void IncreaseScore(int inc)
+    {
+        score += inc;
+        source.clip = PointClip;
+        source.pitch = 1;
+        source.volume = 0.6f;
+        source.Play();
+    }
+
+	void PlayNote(int note)
+    {
+        float targetFreq = PitchManager.NoteToFreq(note);
+        source.clip = DoClip;
+        source.pitch = targetFreq / refFreq;
+        source.volume = 1;
+        source.Play();
+    }
+
+    public void EndGame()
+    {
+        PlayerPrefs.SetInt(LastscoreKey, score);
 
         if (PlayerPrefs.HasKey(HighscoreKey))
         {
             int hs = PlayerPrefs.GetInt(HighscoreKey);
-            if (totalScore > hs)
+            if (score > hs)
             {
-                PlayerPrefs.SetInt(HighscoreKey, totalScore);
+                PlayerPrefs.SetInt(HighscoreKey, score);
             }
         }
         else
         {
-            PlayerPrefs.SetInt(HighscoreKey, totalScore);
+            PlayerPrefs.SetInt(HighscoreKey, score);
         }
 
         SceneManager.LoadScene("Menu");
     }
 
-    void ResumeGame()
-    {
-        source.Stop();
-        timer = maxTimer;
-        TimerBar.gameObject.SetActive(true);
-        GameStarted = true;
-    }
-
-    public void StoppedAt(int midi)
-    {
-        if (!GameStarted) return;
-
-        if (endless) {
-            if (FloorStop != null)
-                FloorStop(midi);
-        } else {
-            if (targetIdx < levelLength)
-            {
-                int target = Level[targetIdx];
-                if (target == midi)
-                {
-                    ReachTarget(target);
-                }
-                else
-                {
-                    timer -= penalty;
-                    if (timer <= 0)
-                    {
-                        timer = 0;
-                        EndGame();
-                    }
-                }
-            }
-        }
-    }
 }

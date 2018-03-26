@@ -567,7 +567,7 @@ namespace Pitch
             }
 
             if (showOctave)
-                noteText += " " + octave.ToString();
+                noteText += octave.ToString();
 
             return noteText;
         }

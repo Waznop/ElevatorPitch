@@ -21,7 +21,7 @@ public class PersonFactory : MonoBehaviour
     const float outerProb = 0.5f;
     const float accProb = 0.5f;
 
-    public GameObject CreatePerson()
+    public PersonScript CreatePerson()
     {
         GameObject person = Instantiate(PersonPrefab);
         PersonScript ps = person.GetComponent<PersonScript>();
@@ -36,7 +36,7 @@ public class PersonFactory : MonoBehaviour
         ps.Top = Tops[Random.Range(0, Tops.Length)];
         ps.Bottom = Bottoms[Random.Range(0, Bottoms.Length)];
 
-        return person;
+        return ps;
     }
 
 }

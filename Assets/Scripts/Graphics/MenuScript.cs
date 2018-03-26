@@ -11,7 +11,8 @@ public class MenuScript : MonoBehaviour {
 
 	public void Play()
     {
-        GameLogic.Level = LevelManager.GenerateLevel(10);
+        Constants.Level = LevelManager.GenerateLevel(10);
+        Constants.Endless = false;
         SceneManager.LoadScene("Main");
     }
 

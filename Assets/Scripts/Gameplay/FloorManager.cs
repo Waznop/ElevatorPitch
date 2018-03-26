@@ -11,11 +11,7 @@ public class FloorManager : MonoBehaviour
     const float c2 = 0.33f;
     const float c3 = 0.29f;
 
-    static GameObject[] floors;
-
-    static ArrayList floorsOn = new ArrayList();
-
-    public static Color[] FloorColors = {
+    Color[] floorColors = {
         new Color(c1, c3, c3),
         new Color(c1, c2, c3),
         new Color(c1, c1, c3),
@@ -30,9 +26,17 @@ public class FloorManager : MonoBehaviour
         new Color(c1, c3, c2)
     };
 
-    public static Color GetColor(int midi)
+    GameObject[] floors;
+    ArrayList floorsOn;
+
+    public static int PosToNote(float pos)
     {
-        return FloorColors[midi % FloorColors.Length];
+        return Mathf.RoundToInt(pos * 4 / Constants.PPU);
+    }
+
+    public static float NoteToPos(int note)
+    {
+        return note * Constants.PPU / 4f;
     }
 
     public static Color LightUp(Color color)
@@ -40,25 +44,33 @@ public class FloorManager : MonoBehaviour
         return color + new Color(0.5f, 0.5f, 0.5f);
     }
 
+    public Color GetColor(int note)
+    {
+        return floorColors[note % floorColors.Length];
+    }
+
     void Start()
     {
         float worldScreenWidth = (Camera.main.orthographicSize * 2 / Screen.height) * Screen.width;
 
-        floors = new GameObject[GameLogic.MaxNote - GameLogic.MinNote + 1];
-        for (int i = GameLogic.MinNote; i <= GameLogic.MaxNote; i++)
+        floorsOn = new ArrayList();
+        floors = new GameObject[Constants.MaxNote - Constants.MinNote + 1];
+        for (int note = Constants.MinNote; note <= Constants.MaxNote; note++)
         {
-            Vector3 pos = new Vector3(0, i * CameraScript.PPU / 4);
+            Vector3 pos = new Vector3(0, NoteToPos(note));
             GameObject floor = Instantiate(FloorPrefab, pos, Quaternion.identity);
-            floors[i - GameLogic.MinNote] = floor;
+            floors[note - Constants.MinNote] = floor;
+
             var left = floor.transform.Find("left_floor").GetComponent<SpriteRenderer>();
             var right = floor.transform.Find("right_floor").GetComponent<SpriteRenderer>();
             var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
+            var text = floor.transform.Find("name").GetComponent<TextMesh>();
 
             Vector3 bgScale = bg.transform.localScale;
             bgScale.x = worldScreenWidth / bg.sprite.bounds.size.x;
             bg.transform.localScale = bgScale;
 
-            bg.color = GetColor(i);
+            bg.color = GetColor(note);
 
             Vector3 leftPos = left.transform.position;
             leftPos.x = -worldScreenWidth / 4 - 1;
@@ -75,37 +87,43 @@ public class FloorManager : MonoBehaviour
             Vector2 rightSize = right.size;
             rightSize.x = worldScreenWidth / 2 - 2;
             right.size = rightSize;
+
+            text.text = PitchManager.NoteToName(note);
+
+            Vector3 textPos = text.transform.position;
+            textPos.x = worldScreenWidth / 2 - 1;
+            text.transform.position = textPos;
         }
     }
 
-    public static void LightOn(int note) {
-        int idx = note - GameLogic.MinNote;
+    public void LightOn(int note) {
+        int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
         var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
         bg.color = LightUp(bg.color);
         floorsOn.Add(note);
     }
 
-    public static void LightOff(int note) {
-        int idx = note - GameLogic.MinNote;
+    public void LightOff(int note) {
+        int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
         var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
         bg.color = GetColor(note);
         floorsOn.Remove(note);
     }
 
-    public static int FloorsOnAbove(int floor) {
+    public int FloorsOnAbove(int note) {
         int count = 0;
-        foreach (int f in floorsOn) {
-            if (f > floor) count++;
+        foreach (int floor in floorsOn) {
+            if (floor > note) count++;
         }
         return count;
     }
 
-    public static int FloorsOnUnder(int floor) {
+    public int FloorsOnUnder(int note) {
         int count = 0;
-        foreach (int f in floorsOn) {
-            if (f < floor) count++;
+        foreach (int floor in floorsOn) {
+            if (floor < note) count++;
         }
         return count;
     }

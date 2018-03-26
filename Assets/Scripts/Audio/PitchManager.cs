@@ -16,13 +16,15 @@ public class PitchManager : MonoBehaviour
     const float Threshold = 0.02f;
 
     int sampleFreq;
-    float[] samples = new float[SampleSize];
+    float[] samples;
 
     AudioSource source;
     PitchTracker pitchTracker;
 
     void Start()
     {
+        samples = new float[SampleSize];
+
         // Project Settings > Audio > DSP Buffer Size = Best latency
         sampleFreq = AudioSettings.outputSampleRate;
 
@@ -53,7 +55,7 @@ public class PitchManager : MonoBehaviour
 
     void PitchDetected(PitchTracker sender, PitchTracker.PitchRecord record)
     {
-        if (!GameLogic.GameStarted) return;
+        if (!Constants.GameOn) return;
 
         if (record.Pitch > 0)
         {
@@ -76,13 +78,18 @@ public class PitchManager : MonoBehaviour
         }
     }
 
-    static public int FreqToMidi(float freq)
+    public static int FreqToNote(float freq)
     {
         return 12 * (int)Mathf.Log(freq / 440f, 2) + 69;
     }
 
-    static public float MidiToFreq(int midi)
+    public static float NoteToFreq(int note)
     {
-        return Mathf.Pow(2, (midi - 69) / 12f) * 440;
+        return Mathf.Pow(2, (note - 69) / 12f) * 440;
+    }
+
+    public static string NoteToName(int note)
+    {
+        return PitchDsp.GetNoteName(note, true, true);
     }
 }

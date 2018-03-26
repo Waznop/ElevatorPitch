@@ -22,7 +22,7 @@ public class PersonScript : MonoBehaviour
     public int Origin = -1;
     public int Destination = -1;
     public float Patience = 0;
-    bool inElevator = false;
+    public bool InElevator = false;
 
     public float SmoothTime = 1;
 
@@ -33,7 +33,33 @@ public class PersonScript : MonoBehaviour
     bool validTarget;
     bool killAtTarget;
 
-    public void MoveTowards(Vector3 pos, bool kill = false)
+    public void Appear(int from, int to) {
+        Origin = from;
+        Destination = to;
+        Patience = Constants.Endless ? Constants.EndlessPatience : Constants.NormalPatience;
+
+        float xpos = Random.Range(-5f, -3f);
+        float ypos = FloorManager.NoteToPos(from) + Constants.PersonOffset;
+        transform.position = new Vector3(xpos, ypos);
+
+        MakePoof();
+    }
+
+    public void GetOnElevator() {
+        InElevator = true;
+        float xpos = Random.Range(-1f, 1f);
+        float ypos = FloorManager.NoteToPos(Origin) + Constants.PersonOffset;
+        MoveTowards(new Vector3(xpos, ypos));
+    }
+
+    public void GetOffElevator() {
+        InElevator = false;
+        float xpos = Random.Range(3f, 5f);
+        float ypos = FloorManager.NoteToPos(Destination) + Constants.PersonOffset;
+        MoveTowards(new Vector3(xpos, ypos), true);
+    }
+
+    void MoveTowards(Vector3 pos, bool kill = false)
     {
         target = pos;
         validTarget = true;
@@ -45,30 +71,14 @@ public class PersonScript : MonoBehaviour
         Instantiate(Poof, transform.position, Quaternion.identity);
     }
 
-    public void FloorStopped(int floor)
-    {
-        if (floor == Origin && !inElevator) {
-            GameLogic.ClientInteraction(true, this);
-            transform.parent = ElevatorControl.Instance.transform;
-            float xpos = Random.Range(-1f, 1f);
-            MoveTowards(new Vector3(xpos, floor * CameraScript.PPU / 4 - 0.5f));
-            inElevator = true;
-        } else if (floor == Destination && inElevator) {
-            Patience = GameLogic.MaxPatience;
-            GameLogic.ClientInteraction(false, this);
-            GameLogic.FloorStop -= FloorStopped;
-            float xpos = Random.Range(3f, 5f);
-            MoveTowards(new Vector3(xpos, floor * CameraScript.PPU / 4 - 0.5f), true);
-            inElevator = false;
-        }
-    }
-
 	void Update()
 	{
         if (validTarget) {
             Vector3 newPos = Vector3.SmoothDamp(transform.position, target, ref velocity, SmoothTime);
-            if (inElevator)
-                newPos.y = ElevatorControl.Instance.transform.position.y - 0.5f;
+
+            if (transform.parent != null)
+                newPos.y = transform.parent.transform.position.y + Constants.PersonOffset;
+
             transform.position = newPos;
 
             if (Vector3.SqrMagnitude(transform.position - target) < precision) {
@@ -80,15 +90,13 @@ public class PersonScript : MonoBehaviour
             }
         }
 
-        if (GameLogic.GameStarted) {
+        if (Constants.GameOn) {
             if (Patience > 0)
             {
                 Patience -= Time.deltaTime;
-                GameLogic.MinPatience = Mathf.Min(GameLogic.MinPatience, Patience);
                 if (Patience <= 0)
                 {
                     Patience = 0;
-                    GameLogic.EndGame();
                 }
             }
         }
