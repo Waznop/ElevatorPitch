@@ -26,9 +26,10 @@ public class ElevatorControl : MonoBehaviour
     {
         if (!Constants.GameOn) return;
 
-        int note = Mathf.Min(PitchManager.MidiNote, Constants.MaxNote);
+        float note = PitchManager.PitchToNote(PitchManager.PitchValue);
+        note = Mathf.Min(note, Constants.MaxNote);
         note = Mathf.Max(note, Constants.MinNote);
-        Vector3 target = new Vector3(0, FloorManager.NoteToPos(note));
+        Vector3 target = new Vector3(0, FloorManager.ApproxNoteToPos(note));
 
         Vector3 prevVelocity = velocity;
         Vector3 prevPos = transform.position;
@@ -40,8 +41,14 @@ public class ElevatorControl : MonoBehaviour
         if (was0 && !is0) {
             animator.SetTrigger(suddenRunTrigger);
         } else if (!was0 && is0) {
-            animator.SetTrigger(stopTrigger);
-            gameLogic.StoppedAt(note);
+            if (FloorManager.AtFloor(note)) {
+                int floor = Mathf.RoundToInt(note);
+                Vector3 floorPos = new Vector3(0, FloorManager.NoteToPos(floor));
+                transform.position = floorPos;
+
+                animator.SetTrigger(stopTrigger);
+                gameLogic.StoppedAt(floor);
+            }
         }
     }
 }

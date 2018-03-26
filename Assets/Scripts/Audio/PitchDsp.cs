@@ -19,9 +19,9 @@ namespace Pitch
         private float m_maxPitch;
         private int m_minNote;
         private int m_maxNote;
-        private int m_blockLen14;	   // 1/4 block len
-        private int m_blockLen24;	   // 2/4 block len
-        private int m_blockLen34;	   // 3/4 block len
+        // private int m_blockLen14;	   // 1/4 block len
+        // private int m_blockLen24;	   // 2/4 block len
+        // private int m_blockLen34;	   // 3/4 block len
         private int m_blockLen44;	   // 4/4 block len
         private double m_sampleRate;
         private float m_detectLevelThreshold;
@@ -52,9 +52,9 @@ namespace Pitch
             m_maxNote = (int)(PitchToMidiNote(m_maxPitch) + 0.5f) - 2;
 
             m_blockLen44 = (int)(m_sampleRate / m_minPitch + 0.5f);
-            m_blockLen34 = (m_blockLen44 * 3) / 4;
-            m_blockLen24 = m_blockLen44 / 2;
-            m_blockLen14 = m_blockLen44 / 4;
+            // m_blockLen34 = (m_blockLen44 * 3) / 4;
+            // m_blockLen24 = m_blockLen44 / 2;
+            // m_blockLen14 = m_blockLen44 / 4;
 
             m_numCourseSteps = (int)((Math.Log((double)m_maxPitch / (double)m_minPitch) / Math.Log(2.0)) * kCourseOctaveSteps + 0.5) + 3;
 

@@ -9,10 +9,10 @@ public class MenuScript : MonoBehaviour {
     public Text Lastscore;
     public Text Highscore;
 
-	public void Play()
+	public void Play(bool endless)
     {
         Constants.Level = LevelManager.GenerateLevel(10);
-        Constants.Endless = false;
+        Constants.Endless = endless;
         SceneManager.LoadScene("Main");
     }
 

@@ -14,11 +14,14 @@ public class Constants {
 
     public const float VecPrecision = 0.01f;
 
+    public const float NormalPrecision = 0.1f;
+    public const float EndlessPrecision = 0.25f;
+
     public const float PersonOffset = -0.5f;
 
     public const float EndlessPatience = 30f;
-    public const float NormalPatience = 10f;
+    public const float NormalPatience = 15f;
 
     public const float EndlessSpawnDecay = 0.95f;
-    public const float EndlessInitSpawnTime = 5f;
+    public const float EndlessInitSpawnTime = 7f;
 }

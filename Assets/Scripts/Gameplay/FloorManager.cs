@@ -39,6 +39,17 @@ public class FloorManager : MonoBehaviour
         return note * Constants.PPU / 4f;
     }
 
+    public static float ApproxNoteToPos(float note)
+    {
+        return note * Constants.PPU / 4f;
+    }
+
+    public static bool AtFloor(float note)
+    {
+        float precision = Constants.Endless ? Constants.EndlessPrecision : Constants.NormalPrecision;
+        return Mathf.Abs(note - Mathf.Round(note)) < precision;
+    }
+
     public static Color LightUp(Color color)
     {
         return color + new Color(0.5f, 0.5f, 0.5f);

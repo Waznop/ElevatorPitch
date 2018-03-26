@@ -59,8 +59,6 @@ public class PitchManager : MonoBehaviour
 
         if (record.Pitch > 0)
         {
-            PitchValue = record.Pitch;
-
             bool consistentNote = true;
             foreach (PitchTracker.PitchRecord rec in pitchTracker.PitchRecords)
             {
@@ -74,16 +72,17 @@ public class PitchManager : MonoBehaviour
             if (consistentNote)
             {
                 MidiNote = record.MidiNote;
+                PitchValue = record.Pitch;
             }
         }
     }
 
-    public static int FreqToNote(float freq)
+    public static float PitchToNote(float pitch)
     {
-        return 12 * (int)Mathf.Log(freq / 440f, 2) + 69;
+        return 12 * Mathf.Log(pitch / 440f, 2) + 69;
     }
 
-    public static float NoteToFreq(int note)
+    public static float NoteToPitch(int note)
     {
         return Mathf.Pow(2, (note - 69) / 12f) * 440;
     }

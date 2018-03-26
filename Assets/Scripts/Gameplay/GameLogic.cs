@@ -45,7 +45,7 @@ public class GameLogic : MonoBehaviour
         factory = GetComponent<PersonFactory>();
         floorManager = GetComponent<FloorManager>();
         source = GetComponent<AudioSource>();
-        refFreq = PitchManager.NoteToFreq(60); // C4
+        refFreq = PitchManager.NoteToPitch(60); // C4
 
         Constants.GameOn = false;
         score = 0;
@@ -292,7 +292,7 @@ public class GameLogic : MonoBehaviour
 
 	void PlayNote(int note)
     {
-        float targetFreq = PitchManager.NoteToFreq(note);
+        float targetFreq = PitchManager.NoteToPitch(note);
         source.clip = DoClip;
         source.pitch = targetFreq / refFreq;
         source.volume = 1;
