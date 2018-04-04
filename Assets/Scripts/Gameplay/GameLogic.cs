@@ -98,7 +98,7 @@ public class GameLogic : MonoBehaviour
                 to = Random.Range(Constants.MinNote, Constants.MaxNote + 1);
             }
 
-            floorManager.LightOn(from);
+            floorManager.LightOn(from, true);
             PersonScript person = factory.CreatePerson();
             person.Appear(from, to);
             clients.Add(person);
@@ -113,7 +113,7 @@ public class GameLogic : MonoBehaviour
             string noteName = PitchManager.NoteToName(from);
             UpText.text = noteName;
             DownText.text = noteName;
-            floorManager.LightOn(from);
+            floorManager.LightOn(from, true);
             PlayNote(from);
             PersonScript person = factory.CreatePerson();
             person.Appear(from, to);
@@ -227,7 +227,7 @@ public class GameLogic : MonoBehaviour
         floorManager.LightOff(toLightOff);
         foreach (int note in toLightOn)
         {
-            floorManager.LightOn(note);
+            floorManager.LightOn(note, false);
             if (!Constants.Endless)
             {
                 PlayNote(note);

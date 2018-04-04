@@ -73,14 +73,25 @@ public class FloorManager : MonoBehaviour
 
             var left = floor.transform.Find("left_floor").GetComponent<SpriteRenderer>();
             var right = floor.transform.Find("right_floor").GetComponent<SpriteRenderer>();
-            var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
+            var left_bg = floor.transform.Find("left_bg").GetComponent<SpriteRenderer>();
+            var right_bg = floor.transform.Find("right_bg").GetComponent<SpriteRenderer>();
             var text = floor.transform.Find("name").GetComponent<TextMesh>();
 
-            Vector3 bgScale = bg.transform.localScale;
-            bgScale.x = worldScreenWidth / bg.sprite.bounds.size.x;
-            bg.transform.localScale = bgScale;
+            Vector3 bgScale = left_bg.transform.localScale;
+            bgScale.x = worldScreenWidth / (2 * left_bg.sprite.bounds.size.x);
 
-            bg.color = GetColor(note);
+            left_bg.transform.localScale = bgScale;
+            right_bg.transform.localScale = bgScale;
+            left_bg.color = GetColor(note);
+            right_bg.color = GetColor(note);
+
+            Vector3 left_bg_pos = left_bg.transform.position;
+            left_bg_pos.x = -worldScreenWidth / 4;
+            left_bg.transform.position = left_bg_pos;
+
+            Vector3 right_bg_pos = right_bg.transform.position;
+            right_bg_pos.x = worldScreenWidth / 4;
+            right_bg.transform.position = right_bg_pos;
 
             Vector3 leftPos = left.transform.position;
             leftPos.x = -worldScreenWidth / 4 - 1;
@@ -106,11 +117,15 @@ public class FloorManager : MonoBehaviour
         }
     }
 
-    public void LightOn(int note)
+    public void LightOn(int note, bool left)
     {
         int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
-        var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
+        SpriteRenderer bg;
+        if (left)
+            bg = floor.transform.Find("left_bg").GetComponent<SpriteRenderer>();
+        else
+            bg = floor.transform.Find("right_bg").GetComponent<SpriteRenderer>();
         bg.color = LightUp(bg.color);
         floorsOn.Add(note);
     }
@@ -119,7 +134,9 @@ public class FloorManager : MonoBehaviour
     {
         int idx = note - Constants.MinNote;
         GameObject floor = floors[idx];
-        var bg = floor.transform.Find("background").GetComponent<SpriteRenderer>();
+        var bg = floor.transform.Find("left_bg").GetComponent<SpriteRenderer>();
+        bg.color = GetColor(note);
+        bg = floor.transform.Find("right_bg").GetComponent<SpriteRenderer>();
         bg.color = GetColor(note);
         floorsOn.Remove(note);
     }
