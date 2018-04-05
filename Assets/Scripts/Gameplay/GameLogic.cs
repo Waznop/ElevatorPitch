@@ -21,12 +21,10 @@ public class GameLogic : MonoBehaviour
     public Text UpText;
     public Text DownText;
     public Slider TimerBar;
+    public Image TimerFill;
     public Text ScoreText;
-
-    public const string MinNoteKey = "minNote";
-    public const string MaxNoteKey = "maxNote";
-    public const string LastscoreKey = "lastscore";
-    public const string HighscoreKey = "highscore";
+    public Image EndPanel;
+    public Text EndText;
 
     // normal
     int curIdx;
@@ -40,6 +38,9 @@ public class GameLogic : MonoBehaviour
     ArrayList clients;
     float timer;
     int score;
+    bool gameEnded;
+
+    Vector3 timerBarPos;
 
     void Start()
     {
@@ -51,6 +52,8 @@ public class GameLogic : MonoBehaviour
         Constants.GameOn = false;
         score = 0;
         timer = 0;
+        gameEnded = false;
+        timerBarPos = TimerBar.transform.position;
         clients = new ArrayList();
 
         if (Constants.Endless)
@@ -124,6 +127,11 @@ public class GameLogic : MonoBehaviour
 
     void Update()
     {
+        if (gameEnded && (Input.touchCount > 0 || Input.GetMouseButtonUp(0)))
+        {
+            Initiate.Fade("HexartMenu", Color.black, 3);
+        }
+
         ScoreText.text = score.ToString();
 
         if (Constants.GameOn)
@@ -212,9 +220,16 @@ public class GameLogic : MonoBehaviour
                 timer = Mathf.Min(timer, person.Patience);
             }
 
+            TimerFill.color = Color.Lerp(Color.red, Color.yellow, TimerBar.value);
+            if (TimerBar.value < Constants.CriticalTimer)
+            {
+                TimerBar.transform.position = timerBarPos + 3 * Random.insideUnitSphere;
+            }
+
             if (timer <= 0)
             {
                 timer = 0;
+                TimerBar.transform.position = timerBarPos;
                 EndGame();
             }
         }
@@ -246,8 +261,12 @@ public class GameLogic : MonoBehaviour
             if (toLightOn.Count > 0 || clients.Count == 0)
             {
                 curIdx++;
+                UpdateTarget();
             }
-            UpdateTarget();
+            else
+            {
+                Constants.GameOn = true;
+            }
         }
     }
 
@@ -340,22 +359,26 @@ public class GameLogic : MonoBehaviour
 
     public void EndGame()
     {
-        PlayerPrefs.SetInt(LastscoreKey, score);
+        Constants.GameOn = false;
 
-        if (PlayerPrefs.HasKey(HighscoreKey))
+        int hs = 0;
+        if (PlayerPrefs.HasKey(Constants.LevelKey))
         {
-            int hs = PlayerPrefs.GetInt(HighscoreKey);
-            if (score > hs)
-            {
-                PlayerPrefs.SetInt(HighscoreKey, score);
-            }
-        }
-        else
-        {
-            PlayerPrefs.SetInt(HighscoreKey, score);
+            hs = PlayerPrefs.GetInt(Constants.LevelKey);
         }
 
-        SceneManager.LoadScene("Menu");
+        if (score > hs)
+        {
+            PlayerPrefs.SetInt(Constants.LevelKey, score);
+            hs = score;
+        }
+
+        EndPanel.gameObject.SetActive(true);
+        EndText.text = Constants.LevelKey +
+            "\n\nScore: " + score.ToString() +
+            "\nHighscore: " + hs.ToString();
+
+        gameEnded = true;
     }
 
 }

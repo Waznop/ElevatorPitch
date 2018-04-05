@@ -18,7 +18,7 @@ public class PitchManager : MonoBehaviour
 
     public AudioMixer output;
 
-    const int SampleSize = 2048;
+    public const int SampleSize = 2048;
 
     // AC
     const int HistorySize = 10;
@@ -30,7 +30,7 @@ public class PitchManager : MonoBehaviour
 
     int sampleFreq;
     float[] samples;
-    float[] spectrum;
+    public static float[] spectrum;
 
     AudioSource source;
     PitchTracker pitchTracker;
