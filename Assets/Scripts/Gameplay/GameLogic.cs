@@ -49,6 +49,9 @@ public class GameLogic : MonoBehaviour
         source = GetComponent<AudioSource>();
         refFreq = PitchManager.NoteToPitch(60); // C4
 
+        InputController.OnDoubleTap += OnDoubleTap;
+        InputController.OnSingleTap += OnSingleTap;
+
         Constants.GameOn = false;
         score = 0;
         timer = 0;
@@ -127,11 +130,6 @@ public class GameLogic : MonoBehaviour
 
     void Update()
     {
-        if (gameEnded && (Input.touchCount > 0 || Input.GetMouseButtonUp(0)))
-        {
-            Initiate.Fade("HexartMenu", Color.black, 3);
-        }
-
         ScoreText.text = score.ToString();
 
         if (Constants.GameOn)
@@ -270,9 +268,14 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    void NormalResumeGame()
+    void StopAudioCue()
     {
         source.Stop();
+        Invoke("NormalResumeGame", 0.5f);
+    }
+
+    void NormalResumeGame()
+    {
         TimerBar.gameObject.SetActive(true);
         Constants.GameOn = true;
     }
@@ -286,7 +289,7 @@ public class GameLogic : MonoBehaviour
                 Spawn();
             }
             TimerBar.gameObject.SetActive(false);
-            Invoke("NormalResumeGame", 1);
+            Invoke("StopAudioCue", 1);
         }
         else
         {
@@ -355,6 +358,22 @@ public class GameLogic : MonoBehaviour
         source.pitch = targetFreq / refFreq;
         source.volume = 1;
         source.Play();
+    }
+
+    void OnSingleTap()
+    {
+        if (gameEnded)
+        {
+            Initiate.Fade("HexartMenu", Color.black, 3);
+        }
+    }
+
+    void OnDoubleTap()
+    {
+        if (!gameEnded)
+        {
+            EndGame();
+        }
     }
 
     public void EndGame()
